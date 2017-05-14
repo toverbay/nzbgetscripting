@@ -1,0 +1,41 @@
+﻿<#@ template debug="true" hostspecific="false" language="C#" #>
+<#@ output extension=".txt" #>
+<#@ assembly name="$(TargetDir)\NzbGetScripting.dll" #>
+<#@ import namespace="NzbGetScripting" #>
+<# if(NzbGetContext.IsWindows) { #>
+	This is Windows!
+<#}#>
+<# // Linux Script Header #>
+#!/bin/sh  for Linux
+###################################
+##### Windows Script Header #######
+@echo off
+goto start:
+###################################
+## NZBGET {ScriptType} SCRIPT    ##
+
+# {ShortDescription}
+#
+# {LongDescription}
+
+###################################
+### OPTIONS
+
+# An option goes here, do you want that? (yes, no).
+#
+# The explanation of the option goes here...
+#DoYouWantThisOption=no
+
+## NZBGET {ScriptType} SCRIPT    ##
+###################################
+
+:start
+dotnet run
+
+rem Return an exit code understood by nzbget
+rem # Exit codes used by NZBGet
+rem POSTPROCESS_SUCCESS=93
+rem POSTPROCESS_NONE=95
+rem POSTPROCESS_ERROR=94
+
+exit /b 93
