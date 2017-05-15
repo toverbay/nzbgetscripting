@@ -14,5 +14,22 @@ namespace NzbGetScripting
         public virtual string ShortDescription => "My cool script";
         public virtual string LongDescription => null;
         public abstract NzbGetScriptType Type { get; }
+
+        public abstract int Run(IEnumerable<string> args);
+
+        protected int Success()
+        {
+            return NzbGetScriptContext.EXIT_CODE_SUCCESS;
+        }
+
+        protected int Failure()
+        {
+            return NzbGetScriptContext.EXIT_CODE_FAILURE;
+        }
+
+        protected int ParCheck()
+        {
+            return NzbGetScriptContext.EXIT_CODE_PAR_CHECK;
+        }
     }
 }

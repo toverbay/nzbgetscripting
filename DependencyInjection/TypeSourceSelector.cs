@@ -127,8 +127,18 @@
 
         public IImplementationTypeSelector ForAssembliesIn(string assemblyPath, IEnumerable<Type> types)
         {
-            var foundAssemblies = FindAssembliesWithTypesx(assemblyPath, types)
-                .ToArray();
+            IEnumerable<Assembly> foundAssemblies = null;
+
+            try
+            {
+                foundAssemblies = FindAssembliesWithTypesx(assemblyPath, types)
+                    .ToArray();
+            }
+            catch
+            {
+                foundAssemblies = new Assembly []{ };
+            }
+
             return InternalFromAssemblies(foundAssemblies);
         }
 

@@ -60,5 +60,27 @@ namespace NzbGetScripting
 
             return (script != null);
         }
+
+        internal NzbScriptBase FirstOrDefault()
+        {
+            var script = _scripts.Values.FirstOrDefault();
+
+            if (script == null)
+            {
+                var scriptType = _scriptTypes.Value?.FirstOrDefault();
+
+                if (scriptType != null)
+                {
+                    script = Activator.CreateInstance(scriptType, null) as NzbScriptBase;
+                }
+            }
+
+            if (script != null)
+            {
+                script.Context = _scriptContext;
+            }
+
+            return script;
+        }
     }
 }

@@ -17,6 +17,11 @@ namespace NzbGetScripting
 
     public class NzbGetScriptContext
     {
+        public const int EXIT_CODE_SUCCESS = 93;
+        public const int EXIT_CODE_FAILURE = 94;
+        public const int EXIT_CODE_NONE = 95;
+        public const int EXIT_CODE_PAR_CHECK = 92;
+
         private readonly IDynamicConfiguration _scriptConfig = new NzbEnvironmentConfigProvider("VSCMD_");
         private readonly IDynamicConfiguration _serverConfig = new NzbEnvironmentConfigProvider("NZBOP_");
 
@@ -46,6 +51,7 @@ namespace NzbGetScripting
         internal void RunScript(IEnumerable<string> args)
         {
             Console.WriteLine("Executing RUN command with the following args:");
+
             if (args?.Count() > 0)
             {
                 var scriptName = args.First();

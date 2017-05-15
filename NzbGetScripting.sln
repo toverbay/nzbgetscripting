@@ -10,6 +10,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2054FD1F-53F7-40A6-9E43-917BE253BE22}"
 	ProjectSection(SolutionItems) = preProject
 		LICENSE.md = LICENSE.md
+		nzbgs = nzbgs
+		nzbgs.bat = nzbgs.bat
 		README.md = README.md
 	EndProjectSection
 EndProject

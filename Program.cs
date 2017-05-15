@@ -1,22 +1,22 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.IO;
-using System.Reflection;
-
-namespace NzbGetScripting
+﻿namespace NzbGetScripting
 {
+    using Microsoft.Extensions.DependencyInjection;
+    using System;
+    using System.IO;
+    using System.Reflection;
+    using System.Linq;
+
     class Program
     {
         public static string Name => typeof(Program).GetTypeInfo().Assembly.GetName().Name;
 
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             // Setup DI
             IServiceCollection serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
             var services = serviceCollection.BuildServiceProvider();
 
-            //var scripts = services.GetServices<NzbScriptBase>();
             var factory = services.GetService<ScriptFactory>();
             var context = services.GetService<NzbGetScriptContext>();
 
@@ -38,11 +38,13 @@ namespace NzbGetScripting
                 Console.WriteLine("Aww! I couldn't find TheScript!");
             }
 
+            string scriptName = null;
+            var exitCode = 0;
+
             // Command Suite
             // - new    : create a new script project
             // - run    : executes a script
             // - shim   : Generates a bash/batch file that NZBGet uses to execute the script
-
             var suite = new CommandSet(Name, Console.Out, Console.Error)
             {
                 $"usage: {Name} COMMAND [OPTIONS]",
@@ -57,11 +59,14 @@ namespace NzbGetScripting
                 },
                 new Command("run", "Executes a script")
                 {
-                    //Options = new OptionSet
-                    //{
-
-                    //},
-                    Run = cmdArgs => context.RunScript(cmdArgs)
+                    Options = new OptionSet
+                    {
+                        { "f|file=", pathToScript => CompileAndRun(pathToScript) },
+                        { "s|script=", name => scriptName = name}
+                    },
+                    Run = runArgs => {
+                        exitCode = factory.RunByName(scriptName, runArgs);
+                    }
                 },
                 new Command("shim", "Generates a bash/batch file that NZBGet uses to execute the script")
                 {
@@ -73,15 +78,7 @@ namespace NzbGetScripting
                 }
             };
 
-            try
-            {
-                suite.Run(args);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("An error occurred while attempting to execute the command:");
-                Console.WriteLine(ex.Message);
-            }
+            suite.Run(args);
 
             foreach (var key in context.ScriptConfig.Keys)
             {
@@ -98,6 +95,13 @@ namespace NzbGetScripting
             {
                 Console.WriteLine("oops!");
             }
+
+            return exitCode;
+        }
+
+        private static void CompileAndRun(string pathToScript)
+        {
+            Console.WriteLine("Sorry! This feature is not yet implemented.");
         }
 
         private static void ConfigureServices(IServiceCollection serviceCollection)
@@ -113,11 +117,6 @@ namespace NzbGetScripting
             {
                 return new ScriptFactory(ctx.GetService<NzbGetScriptContext>(), ctx.GetServices<NzbScriptBase>());
             });
-
-            //serviceCollection.AddSingleton((svcs) =>
-            //{
-            //    return new ScriptFactory();
-            //});
         }
 
         private static void ShowHelp()
