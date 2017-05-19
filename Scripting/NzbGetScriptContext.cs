@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 
@@ -27,7 +28,12 @@ namespace NzbGetScripting
 
         public NzbGetScriptContext()
         {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
         }
+
+        public TextWriter Out => Console.Out;
+        public TextWriter Error => Console.Out;
+        //public ILog Log => ???  //TODO: Implement Logging
 
         public dynamic ScriptConfig => _scriptConfig;
         public dynamic ServerConfig => _serverConfig;

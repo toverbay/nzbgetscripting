@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -9,11 +10,13 @@ namespace NzbGetScripting
     {
         private readonly Lazy<IEnumerable<Type>> _scriptTypes;
         private readonly NzbGetScriptContext _scriptContext;
+        private readonly ILoggerFactory _logger;
         private readonly IDictionary<string, NzbScriptBase> _scripts;
 
-        public ScriptFactory(NzbGetScriptContext scriptContext, IEnumerable<NzbScriptBase> externalScripts)
+        public ScriptFactory(NzbGetScriptContext scriptContext, ILoggerFactory logger, IEnumerable<NzbScriptBase> externalScripts)
         {
             _scriptContext = scriptContext ?? throw new ArgumentNullException(nameof(scriptContext));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             _scriptTypes = new Lazy<IEnumerable<Type>>(() =>
                 GetType().GetTypeInfo().Assembly.GetTypes()
@@ -47,10 +50,7 @@ namespace NzbGetScripting
                         if (string.Equals(thisScript?.Name, name, StringComparison.OrdinalIgnoreCase))
                         {
                             script = thisScript;
-                            // The script's name matches. Set its context...
-                            script.Context = _scriptContext;
-                            // ...and add it to the dictionary
-                            _scripts.Add(name, script);
+                            AddScriptInstance(script);
 
                             break;
                         }
@@ -59,6 +59,16 @@ namespace NzbGetScripting
             }
 
             return (script != null);
+        }
+
+        private void AddScriptInstance(NzbScriptBase script)
+        {
+            // The script's name matches. Set its context...
+            script.Context = _scriptContext;
+            script.Logger = _logger.CreateLogger(script.Name);
+
+            // ...and add it to the dictionary
+            _scripts.Add(script.Name, script);
         }
 
         internal NzbScriptBase FirstOrDefault()
@@ -77,7 +87,7 @@ namespace NzbGetScripting
 
             if (script != null)
             {
-                script.Context = _scriptContext;
+                AddScriptInstance(script);
             }
 
             return script;
