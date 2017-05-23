@@ -7,38 +7,52 @@
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
+    using System.Diagnostics;
+    using System.Collections.Generic;
 
     class Program
     {
         public static string Name => typeof(Program).GetTypeInfo().Assembly.GetName().Name;
-        private static LogLevel s_LogLevel = LogLevel.Warning;
+        private static LogLevel s_LogLevel = LogLevel.Information;
         private static readonly Option SetVerbosityOption = new VerbosityOption();
 
-        static int Main(string[] args)
+        static Program()
         {
-            try
-            {
-                return MainAsync(args)
-                    .GetAwaiter()
-                    .GetResult();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"ERROR: {ex.Message}");
-                return NzbGetScriptContext.EXIT_CODE_FAILURE;
-            }
         }
 
-        public static async Task<int> MainAsync(string[] args)
+        static int Main(string[] args)
         {
             // Setup DI
             IServiceCollection serviceCollection = new ServiceCollection();
             ConfigureServices(serviceCollection);
             var services = serviceCollection.BuildServiceProvider();
 
+            return MainAsync(services, args)
+                .GetAwaiter()
+                .GetResult();
+        }
+
+
+        public static async Task<int> MainAsync(IServiceProvider services, params string[] args)
+        {
             string scriptName = null;
+            string scriptFile = null;
+
             var exitCode = 0;
 
+            var logger = services.GetService<ILoggerFactory>()
+                .AddConsole((msg, logLevel) => logLevel >= s_LogLevel, true)
+                .CreateLogger(Name)
+                .CreateFacade();
+
+            logger.Try(() => { var x = 1; }).WithTiming().Named("My Action").LogAndContinue();
+            logger.Try(() => { var x = 1; }).LogAndThrow()
+            logger.Try(() => { var x = 1; }).Named("My Action").LogAndContinue()
+            logger.Try(() => { var x = 1; }).Named("My Action").LogAndThrow()
+            logger.Try(() => { var x = 1; }).WithTiming().LogAndContinue()
+            logger.Try(() => { var x = 1; }).WithTiming().LogAndContinue()
+            logger.Try(() => { var x = 1; }).WithTiming().LogAndContinue()
+            logger.Try(() => { var x = 1; }).WithTiming().LogAndContinue()
             // Command Suite
             // - new    : create a new script project
             // - run    : executes a script
@@ -49,36 +63,82 @@
                 $"usage: {Name} COMMAND [OPTIONS]",
                 { "h|?|help", h => ShowHelp() },
                 SetVerbosityOption,
+
                 new Command("new", "Create a new script project")
                 {
                     //Options = new OptionSet
                     //{
 
                     //},
-                    Run = cmdArgs => services.GetService<NzbGetScriptContext>().NewProject(cmdArgs)
+                    Run = cmdArgs => logger.TryAndTime(() =>
+                        services.GetService<NzbGetScriptContext>().NewProject(cmdArgs))
                 },
+
                 new Command("run", "Executes a script")
+                {
+                    Options = new OptionSet
+                    {
+                        { "f|file=", pathToScript => scriptFile = pathToScript },
+                        { "s|script=", name => scriptName = name },
+                    },
+                    Run = runArgs => timer.TimeAction(
+                        beforeAction: (elapsedMs) =>
+                        {
+                            logger.LogInformation(new EventId((int)elapsedMs, "HiThere"),
+                                "Begin execution of script '{0}' with args '{1}'",
+                                string.IsNullOrWhiteSpace(scriptName) ? "default script" : scriptName,
+                                string.Join(", ", runArgs));
+                        },
+                        action: () => {
+                            var scriptFactory = services.GetService<ScriptFactory>();
+
+                            if (IsScriptFile(scriptFile))
+                            {
+                                exitCode = scriptFactory.CompileAndRunScript(scriptFile, runArgs);
+                            }
+                            else
+                            {
+                                exitCode = scriptFactory.RunByNameOrDefault(scriptName, runArgs);
+                            }
+                        },
+                        afterAction: (elapsedMs, totalMs) =>
+                        {
+                            logger.LogInformation(new EventId((int)elapsedMs), "Finished script in {0}ms", totalMs);
+                        })
+                },
+
+                new Command("shim", "Generates a bash/batch file that NZBGet uses to execute the script")
                 {
                     Options = new OptionSet
                     {
                         { "f|file=", pathToScript => CompileAndRun(pathToScript) },
                         { "s|script=", name => scriptName = name},
                     },
-                    Run = runArgs => {
-                        exitCode = services.GetService<ScriptFactory>().RunByName(scriptName, runArgs);
-                    }
-                },
-                new Command("shim", "Generates a bash/batch file that NZBGet uses to execute the script")
-                {
-                    //Options = new OptionSet
-                    //{
-
-                    //},
                     Run = cmdArgs => services.GetService<NzbGetScriptContext>().CreateShim(cmdArgs)
                 }
             };
 
-            suite.Run(args);
+            try
+            {
+                await Task.Run(() => suite.Run(args));
+            }
+            catch (Exception ex)
+            {
+                var command = suite.GetCommand(args, out var commandArgs);
+                var stackTrace = ex.StackTrace.Split('\n').FirstOrDefault();
+
+                logger?.LogError(new EventId(0), "An error occurred attempting to execute the command: {0} {1}",
+                    command.Name,
+                    commandArgs.Count() > 0 ? string.Join(", ", commandArgs.ToArray()) : string.Empty);
+                logger?.LogInformation("  {0}: {1}", ex.GetType().Name, ex.Message);
+
+                if (!string.IsNullOrWhiteSpace(stackTrace))
+                {
+                    logger?.LogDebug(" {0}", stackTrace);
+                }
+
+                return NzbGetScriptContext.EXIT_CODE_FAILURE;
+            }
 
             var factory = services.GetService<ScriptFactory>();
             var context = services.GetService<NzbGetScriptContext>();
@@ -116,8 +176,6 @@
             {
                 Console.WriteLine("oops!");
             }
-
-            Console.ReadLine();
 
             return exitCode;
         }
@@ -161,10 +219,10 @@
             Console.WriteLine("Sorry! This feature is not yet implemented.");
         }
 
-        private static int s_LoggerFactoryCount = 0;
-
         private static void ConfigureServices(IServiceCollection serviceCollection)
         {
+            serviceCollection.AddLogging();
+
             serviceCollection.Scan(scan => scan
                 .ForAssembliesIn<NzbScriptBase>(Path.Combine(AppContext.BaseDirectory, "../../../scripts/"))
                 .AddClasses(classes => classes.AssignableTo<NzbScriptBase>())
@@ -172,12 +230,6 @@
                 .WithTransientLifetime());
 
             serviceCollection.AddSingleton((ctx) => new NzbGetScriptContext());
-            serviceCollection.AddSingleton((ctx) => {
-                s_LoggerFactoryCount++;
-                return new LoggerFactory()
-                    .AddConsole(includeScopes: true, minLevel: s_LogLevel);
-            });
-
             serviceCollection.AddSingleton((ctx) =>
             {
                 return new ScriptFactory(ctx.GetService<NzbGetScriptContext>(),
@@ -190,6 +242,11 @@
         private static void ShowHelp()
         {
             Console.WriteLine($"General help for {Name}");
+        }
+
+        private static bool IsScriptFile(string pathToScript)
+        {
+            return File.Exists(pathToScript);
         }
     }
 }

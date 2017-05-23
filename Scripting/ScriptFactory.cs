@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -65,7 +66,7 @@ namespace NzbGetScripting
         {
             // The script's name matches. Set its context...
             script.Context = _scriptContext;
-            script.Logger = _logger.CreateLogger(script.Name);
+            script.Logger = new LoggerFacade(_logger.CreateLogger(script.Name), Stopwatch.StartNew());
 
             // ...and add it to the dictionary
             _scripts.Add(script.Name, script);

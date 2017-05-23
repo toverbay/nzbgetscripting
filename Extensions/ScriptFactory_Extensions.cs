@@ -1,12 +1,18 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace NzbGetScripting
 {
     static class ScriptFactory_Extensions
     {
-        public static int RunByName(this ScriptFactory factory, string scriptName, IEnumerable<string> args)
+        public static int CompileAndRunScript(this ScriptFactory factory, string pathToScript, IEnumerable<string> args)
+        {
+            Console.WriteLine("Sorry! Script compilation is not implemented yet.");
+            return NzbGetScriptContext.EXIT_CODE_NONE;
+        }
+
+        public static int RunByNameOrDefault(this ScriptFactory factory, string scriptName, IEnumerable<string> args)
         {
             NzbScriptBase script = null;
 
@@ -19,18 +25,23 @@ namespace NzbGetScripting
                 factory.TryGetScript(scriptName, out script);
             }
 
+            if (script == null)
+            {
+                throw new InvalidOperationException("Script not found");
+            }
+
             try
             {
                 return script.Run(args);
             }
             catch (Exception ex)
             {
-                Console.Write("An error occurred while attempting to execute ");
-                Console.Write(string.IsNullOrWhiteSpace(scriptName) ? "the default script" : scriptName);
-                Console.WriteLine(":");
-                Console.WriteLine(ex.Message);
+                scriptName = string.IsNullOrWhiteSpace(scriptName) ? "the default script" : scriptName;
 
-                return NzbGetScriptContext.EXIT_CODE_FAILURE;
+                script.Logger?.Crit(null, ex, "An error occurred while attempting to execute {0}.",
+                    scriptName);
+
+                throw;
             }
         }
     }

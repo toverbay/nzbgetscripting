@@ -1,8 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace NzbGetScripting
 {
@@ -10,7 +7,7 @@ namespace NzbGetScripting
     {
         protected internal string[] Args { get; internal set; }
         protected internal NzbGetScriptContext Context { get; internal set; }
-        public ILogger Logger { get; internal set; }
+        protected internal ILoggerFacade Logger { get; internal set; }
 
         public virtual string Name => GetType().Name;
         public virtual string ShortDescription => "My cool script";

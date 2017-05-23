@@ -4,12 +4,10 @@ namespace NzbGetScripting
 {
     using System;
     using System.Collections.Generic;
-    using System.Text;
 
     /// <summary>
     /// Converts an enum value into a string token.
     /// </summary>
-
     public sealed class EnumTokenizer : ObjectTokenizer<Enum>
     {
     }
@@ -20,7 +18,6 @@ namespace NzbGetScripting
     /// </summary>
     /// <remarks>This class is for internal use only.</remarks>
     /// <typeparam name="TClass">The type</typeparam>
-
     public abstract class ObjectTokenizer<TClass> where TClass : class
     {
         public static IEnumerable<string> Tokenize<TEnum>(TEnum value)
@@ -40,5 +37,4 @@ namespace NzbGetScripting
             }
         }
     }
-
 }

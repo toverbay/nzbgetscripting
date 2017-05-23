@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace NzbGetScripting
 {
@@ -14,12 +15,14 @@ namespace NzbGetScripting
 
         public override int Run(IEnumerable<string> args)
         {
-            Logger.LogTrace($"Running MyScript with the following options: {string.Join(", ", args.ToArray())}");
-            Logger.LogDebug("This is a debug-level log message (verbosity: 5)");
-            Logger.LogInformation("This is an information-level log message (verbosity: 4)");
-            Logger.LogWarning("This is a warning-level log message (verbosity: 3)");
-            Logger.LogError("This is an error-level log message (verbosity: 2)");
-            Logger.LogCritical("This is a critical-level log message (verbosity: 1)");
+            Logger.Trace($"Running MyScript with the following options: {string.Join(", ", args.ToArray())}");
+            Logger.Debug("This is a debug-level log message (verbosity: 5)");
+            Logger.Info("This is an information-level log message (verbosity: 4)");
+            Logger.Warn("This is a warning-level log message (verbosity: 3)");
+            Logger.Error("This is an error-level log message (verbosity: 2)");
+            Logger.Crit((object)"This is a critical-level log message (verbosity: 1)");
+
+            //throw new InvalidOperationException("This exception was thrown inside the script");
 
             return 0;
         }

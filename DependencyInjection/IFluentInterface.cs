@@ -4,7 +4,7 @@
     using System.ComponentModel;
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    internal interface IFluentInterface
+    public interface IFluentInterface
     {
         [EditorBrowsable(EditorBrowsableState.Never)]
         Type GetType();
