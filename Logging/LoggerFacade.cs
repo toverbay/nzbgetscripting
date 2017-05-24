@@ -11,7 +11,7 @@ namespace NzbGetScripting.Logging
         private readonly ILogger _logger;
         private readonly Stopwatch _stopwatch;
 
-        public Stopwatch Stopwatch => throw new NotImplementedException();
+        public Stopwatch Stopwatch => _stopwatch;
 
         public LoggerFacade(ILogger logger, Stopwatch stopwatch)
         {
@@ -301,14 +301,14 @@ namespace NzbGetScripting.Logging
 
         private void Log(LogLevel logLevel, EventId eventId, Exception ex, string format, params object[] args)
         {
-            _logger.Log(logLevel, eventId, args, null, (s, e) => string.Format(format, s));
+            _logger.Log(logLevel, eventId, args ?? new string[] { }, null, (s, e) => string.Format(format ?? "{0}", s));
 
             if (ex != null)
             {
                 _logger.Log(logLevel > LogLevel.Error ? LogLevel.Error : logLevel, eventId, 0, null, (s, e) =>
                     $"  {ex.GetType().Name}: {ex.Message}");
 
-                var stackTrace = ex.StackTrace.Split('\n').FirstOrDefault();
+                var stackTrace = ex.StackTrace?.Split('\n').FirstOrDefault();
                 if (!string.IsNullOrWhiteSpace(stackTrace))
                 {
                     _logger.Log(logLevel > LogLevel.Debug ? LogLevel.Debug : logLevel,
@@ -335,17 +335,17 @@ namespace NzbGetScripting.Logging
 
         public ILoggerTryAsync TryAsync(Task task)
         {
-            throw new NotImplementedException();
+            return new LoggerTryAsync(this, task);
         }
 
         public ILoggerTryAsync<TResult> TryAsync<TResult>(Func<Task<TResult>> asyncFunc)
         {
-            throw new NotImplementedException();
+            return new LoggerTryAsync<TResult>(this, asyncFunc);
         }
 
         public ILoggerTryAsync<TResult> TryAsync<TResult>(Func<Task<TResult>> asyncFunc, TResult defaultValue)
         {
-            throw new NotImplementedException();
+            return new LoggerTryAsync<TResult>(this, asyncFunc, defaultValue);
         }
 
         private EventId GetEventId(int? eventId = null)
