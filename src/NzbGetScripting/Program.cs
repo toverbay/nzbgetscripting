@@ -1,15 +1,13 @@
 ﻿namespace NzbGetScripting
 {
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Logging;
+    using NzbGetScripting.Logging;
     using System;
     using System.IO;
-    using System.Reflection;
     using System.Linq;
+    using System.Reflection;
     using System.Threading.Tasks;
-    using Microsoft.Extensions.Logging;
-    using System.Diagnostics;
-    using System.Collections.Generic;
-    using NzbGetScripting.Logging;
 
     class Program
     {
@@ -65,9 +63,7 @@
                     //},
                     Run = cmdArgs => logger.Try(() =>
                         services.GetService<NzbGetScriptContext>().NewProject(cmdArgs))
-                            .Named(scriptName)
-                            .WithTiming()
-                            .LogAndContinue()
+                        .LogAndContinue()
                 },
 
                 new Command("run", "Executes a script")
@@ -77,8 +73,7 @@
                         { "f|file=", pathToScript => scriptFile = pathToScript },
                         { "s|script=", name => scriptName = name },
                     },
-                    Run = runArgs => logger.Try(() =>
-                    {
+                    Run = runArgs => logger.Try(() => {
                         var scriptFactory = services.GetService<ScriptFactory>();
 
                         if (IsScriptFile(scriptFile))
@@ -89,7 +84,10 @@
                         {
                             exitCode = scriptFactory.RunByNameOrDefault(scriptName, runArgs);
                         }
-                    }).Named(scriptName.ToStringOrDefault("default script")).WithTiming().LogAndContinue()
+                    })
+                    .Named(scriptName.ToStringOrDefault(scriptFile.ToStringOrDefault("default script")))
+                    .WithTiming()
+                    .LogAndContinue()
                 },
 
                 new Command("shim", "Generates a bash/batch file that NZBGet uses to execute the script")
@@ -112,15 +110,9 @@
                 var command = suite.GetCommand(args, out var commandArgs);
                 var stackTrace = ex.StackTrace.Split('\n').FirstOrDefault();
 
-                logger.Error(0, "An error occurred attempting to execute the command: {0} {1}",
+                logger.Error(ex, "An error occurred attempting to execute the command: {0} {1}",
                     command.Name,
                     commandArgs.Count() > 0 ? string.Join(", ", commandArgs.ToArray()) : string.Empty);
-                logger.Info("  {0}: {1}", ex.GetType().Name, ex.Message);
-
-                if (!string.IsNullOrWhiteSpace(stackTrace))
-                {
-                    logger.Debug(" {0}", stackTrace);
-                }
 
                 return NzbGetScriptContext.EXIT_CODE_FAILURE;
             }

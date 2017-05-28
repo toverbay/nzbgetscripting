@@ -5,8 +5,6 @@ VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NzbGetScripting", "src\NzbGetScripting\NzbGetScripting.csproj", "{DEAA0D49-B593-4535-B4C1-D515940551E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyCoolScript", "src\MyCoolScript\MyCoolScript.csproj", "{037B3348-E54C-45C7-95A4-851385E53037}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2054FD1F-53F7-40A6-9E43-917BE253BE22}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -17,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NzbGetScripting.Tests", "src\NzbGetScripting.Tests\NzbGetScripting.Tests.csproj", "{CA8787A1-B66B-4A0C-88F3-446F086F1FB6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NzbGetScripting.Tests", "src\NzbGetScripting.Tests\NzbGetScripting.Tests.csproj", "{96AADA1A-1885-4D75-9EA5-DE30760D0241}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,14 +27,10 @@ Global
 		{DEAA0D49-B593-4535-B4C1-D515940551E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEAA0D49-B593-4535-B4C1-D515940551E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DEAA0D49-B593-4535-B4C1-D515940551E5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{037B3348-E54C-45C7-95A4-851385E53037}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{037B3348-E54C-45C7-95A4-851385E53037}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{037B3348-E54C-45C7-95A4-851385E53037}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{037B3348-E54C-45C7-95A4-851385E53037}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CA8787A1-B66B-4A0C-88F3-446F086F1FB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CA8787A1-B66B-4A0C-88F3-446F086F1FB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CA8787A1-B66B-4A0C-88F3-446F086F1FB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CA8787A1-B66B-4A0C-88F3-446F086F1FB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96AADA1A-1885-4D75-9EA5-DE30760D0241}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96AADA1A-1885-4D75-9EA5-DE30760D0241}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96AADA1A-1885-4D75-9EA5-DE30760D0241}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96AADA1A-1885-4D75-9EA5-DE30760D0241}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

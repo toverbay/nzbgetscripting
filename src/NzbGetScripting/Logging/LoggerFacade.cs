@@ -305,14 +305,14 @@ namespace NzbGetScripting.Logging
 
         private void Log(LogLevel logLevel, EventId eventId, Exception ex, string format, params object[] args)
         {
-            _logger.Log(logLevel, eventId, args ?? new string[] { "[null]" }, null, (s, e) => string.Format(format ?? "{0}", s));
+            _logger.Log(logLevel, eventId, args ?? new string[] { }, null, (s, e) => string.Format(format ?? "{0}", s));
 
             if (ex != null)
             {
                 _logger.Log(logLevel > LogLevel.Error ? LogLevel.Error : logLevel, eventId, 0, null, (s, e) =>
                     $"  {ex.GetType().Name}: {ex.Message}");
 
-                var stackTrace = ex.StackTrace?.Split('\n')?.FirstOrDefault();
+                var stackTrace = ex.StackTrace?.Split('\n').FirstOrDefault();
                 if (!string.IsNullOrWhiteSpace(stackTrace))
                 {
                     _logger.Log(logLevel > LogLevel.Debug ? LogLevel.Debug : logLevel,
