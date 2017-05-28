@@ -19,7 +19,7 @@ namespace NzbGetScripting
             beforeAction?.Invoke(startMs);
 
             sw.Start();
-            action();
+            action?.Invoke();
             sw.Stop();
 
             afterAction?.Invoke(sw.ElapsedMilliseconds, sw.ElapsedMilliseconds - startMs);

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using NzbGetScripting.Logging;
 using System.Collections.Generic;
 
 namespace NzbGetScripting

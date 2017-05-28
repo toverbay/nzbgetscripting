@@ -9,6 +9,7 @@
     using Microsoft.Extensions.Logging;
     using System.Diagnostics;
     using System.Collections.Generic;
+    using NzbGetScripting.Logging;
 
     class Program
     {
@@ -45,14 +46,6 @@
                 .CreateLogger(Name)
                 .CreateFacade();
 
-            logger.Try(() => { var x = 1; }).WithTiming().Named("My Action").LogAndContinue();
-            logger.Try(() => { var x = 1; }).LogAndThrow()
-            logger.Try(() => { var x = 1; }).Named("My Action").LogAndContinue()
-            logger.Try(() => { var x = 1; }).Named("My Action").LogAndThrow()
-            logger.Try(() => { var x = 1; }).WithTiming().LogAndContinue()
-            logger.Try(() => { var x = 1; }).WithTiming().LogAndContinue()
-            logger.Try(() => { var x = 1; }).WithTiming().LogAndContinue()
-            logger.Try(() => { var x = 1; }).WithTiming().LogAndContinue()
             // Command Suite
             // - new    : create a new script project
             // - run    : executes a script
@@ -70,8 +63,11 @@
                     //{
 
                     //},
-                    Run = cmdArgs => logger.TryAndTime(() =>
+                    Run = cmdArgs => logger.Try(() =>
                         services.GetService<NzbGetScriptContext>().NewProject(cmdArgs))
+                            .Named(scriptName)
+                            .WithTiming()
+                            .LogAndContinue()
                 },
 
                 new Command("run", "Executes a script")
@@ -81,30 +77,19 @@
                         { "f|file=", pathToScript => scriptFile = pathToScript },
                         { "s|script=", name => scriptName = name },
                     },
-                    Run = runArgs => timer.TimeAction(
-                        beforeAction: (elapsedMs) =>
-                        {
-                            logger.LogInformation(new EventId((int)elapsedMs, "HiThere"),
-                                "Begin execution of script '{0}' with args '{1}'",
-                                string.IsNullOrWhiteSpace(scriptName) ? "default script" : scriptName,
-                                string.Join(", ", runArgs));
-                        },
-                        action: () => {
-                            var scriptFactory = services.GetService<ScriptFactory>();
+                    Run = runArgs => logger.Try(() =>
+                    {
+                        var scriptFactory = services.GetService<ScriptFactory>();
 
-                            if (IsScriptFile(scriptFile))
-                            {
-                                exitCode = scriptFactory.CompileAndRunScript(scriptFile, runArgs);
-                            }
-                            else
-                            {
-                                exitCode = scriptFactory.RunByNameOrDefault(scriptName, runArgs);
-                            }
-                        },
-                        afterAction: (elapsedMs, totalMs) =>
+                        if (IsScriptFile(scriptFile))
                         {
-                            logger.LogInformation(new EventId((int)elapsedMs), "Finished script in {0}ms", totalMs);
-                        })
+                            exitCode = scriptFactory.CompileAndRunScript(scriptFile, runArgs);
+                        }
+                        else
+                        {
+                            exitCode = scriptFactory.RunByNameOrDefault(scriptName, runArgs);
+                        }
+                    }).Named(scriptName.ToStringOrDefault("default script")).WithTiming().LogAndContinue()
                 },
 
                 new Command("shim", "Generates a bash/batch file that NZBGet uses to execute the script")
@@ -127,14 +112,14 @@
                 var command = suite.GetCommand(args, out var commandArgs);
                 var stackTrace = ex.StackTrace.Split('\n').FirstOrDefault();
 
-                logger?.LogError(new EventId(0), "An error occurred attempting to execute the command: {0} {1}",
+                logger.Error(0, "An error occurred attempting to execute the command: {0} {1}",
                     command.Name,
                     commandArgs.Count() > 0 ? string.Join(", ", commandArgs.ToArray()) : string.Empty);
-                logger?.LogInformation("  {0}: {1}", ex.GetType().Name, ex.Message);
+                logger.Info("  {0}: {1}", ex.GetType().Name, ex.Message);
 
                 if (!string.IsNullOrWhiteSpace(stackTrace))
                 {
-                    logger?.LogDebug(" {0}", stackTrace);
+                    logger.Debug(" {0}", stackTrace);
                 }
 
                 return NzbGetScriptContext.EXIT_CODE_FAILURE;

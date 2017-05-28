@@ -4,11 +4,12 @@
     <RuntimeIdentifiers>win10-x64;osx.10.12-x64;debian.8-x64</RuntimeIdentifiers>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp1.1</TargetFramework>
-    <CodeAnalysisRuleSet>MyCustomRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DocumentationFile>bin\Debug\netcoreapp1.1\NzbGetScripting.xml</DocumentationFile>
+    <DocumentationFile></DocumentationFile>
+    <NoWarn>$(NoWarn),1573,1591,SA0001</NoWarn>
+    <CodeAnalysisRuleSet>zzzCodingStyle.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>

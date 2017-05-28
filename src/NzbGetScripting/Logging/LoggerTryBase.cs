@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace NzbGetScripting.Logging
 {
@@ -38,12 +37,12 @@ namespace NzbGetScripting.Logging
 
         protected void LogEndTimed(int eventId, long elapsedMs, long totalMs)
         {
-            _logger.Log(LogLevel.Information, eventId, "Execution ended for {0} after {0}ms", QuotedActionName, totalMs);
+            _logger.Log(LogLevel.Information, eventId, "Execution ended for {0} after {1}ms", QuotedActionName, totalMs);
         }
 
         protected void LogEndTimed<T>(int eventId, T result, T defaultValue, long elapsedMs, long totalMs)
         {
-            _logger.Log(LogLevel.Information, eventId, "Execution ended for {0} after {0}ms", QuotedActionName, totalMs);
+            _logger.Log(LogLevel.Information, eventId, "Execution ended for {0} after {1}ms", QuotedActionName, totalMs);
 
             if (IsNullReference(result))
             {

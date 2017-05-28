@@ -5,13 +5,13 @@ namespace NzbGetScripting.Logging
 {
     sealed class LoggerTryAsync<T> : LoggerTryBase, ILoggerTryAsync<T>, ILoggerTryNamedAsync<T>, ILoggerTryTimedAsync<T>
     {
-        private readonly Task<T> _action;
+        private readonly Func<Task<T>> _action;
         private readonly T _defaultValue;
 
-        public LoggerTryAsync(ILoggerFacade logger, Task<T> action) : this(logger, action, default(T))
+        public LoggerTryAsync(ILoggerFacade logger, Func<Task<T>> action) : this(logger, action, default(T))
         { }
 
-        public LoggerTryAsync(ILoggerFacade logger, Task<T> action, T defaultValue) : base(logger)
+        public LoggerTryAsync(ILoggerFacade logger, Func<Task<T>> action, T defaultValue) : base(logger)
         {
             _action = action ?? throw new ArgumentNullException(nameof(action));
             _defaultValue = defaultValue;
@@ -31,7 +31,7 @@ namespace NzbGetScripting.Logging
         {
             try
             {
-                var result = await (IsTimed ? TimeActionAsync(_action, eventId) : _action);
+                var result = await (IsTimed ? TimeActionAsync(_action(), eventId) : _action());
 
                 if (!IsNullReference(result))
                 {
@@ -60,7 +60,7 @@ namespace NzbGetScripting.Logging
         {
             try
             {
-                var result = await (IsTimed ? TimeActionAsync(_action, eventId) : _action);
+                var result = await (IsTimed ? TimeActionAsync(_action(), eventId) : _action());
 
                 if (!IsNullReference(result))
                 {

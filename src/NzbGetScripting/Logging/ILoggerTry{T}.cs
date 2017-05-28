@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace NzbGetScripting.Logging
+﻿namespace NzbGetScripting.Logging
 {
     public interface ILoggerTryAction<T> : IFluentInterface
     {
